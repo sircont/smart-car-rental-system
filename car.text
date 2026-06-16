@@ -1,0 +1,574 @@
+================================================================================
+                    DESIGN AND IMPLEMENTATION OF A
+                       SMART CAR RENTAL SYSTEM
+================================================================================
+
+                         A PROJECT REPORT
+
+                    Submitted by:
+                    ABUBAKARI ZEIDU
+                    Student ID: 20220412010
+
+          in partial fulfilment of the requirements for the award of the
+              BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY
+
+                    [School / Department name]
+                    [University name]
+                    [Month Year]
+
+Citation style used in this document: APA 7th edition (author–date). The
+reference list is alphabetical. If your department requires Harvard or IEEE,
+adapt the in-text form using the same sources listed in docs/REFERENCES.md.
+
+================================================================================
+DECLARATION
+================================================================================
+
+I, Abubakari Zeidu (20220412010), declare that this research report is my
+original work. It has not been submitted to any other university or institution
+for any award. Sources consulted are duly acknowledged and cited.
+
+Candidate's Name: Abubakari Zeidu
+Signature: ............................
+Date: ............................
+
+================================================================================
+CERTIFICATION
+================================================================================
+
+I certify that this project report (Smart Car Rental System) was carried out
+by Abubakari Zeidu under my supervision as part of the requirements for the
+award of a degree in Information Technology.
+
+Supervisor: ............................
+Signature: ............................
+Date: ............................
+
+Head of Department: ............................
+Signature: ............................
+Date: ............................
+
+================================================================================
+ABSTRACT
+================================================================================
+
+Vehicle rental businesses depend on accurate availability, clear pricing, and
+reliable records of bookings and payments (Connolly & Begg, 2015). Manual or
+fragmented processes often cause long counter queues, miscommunication, and
+errors such as conflicting reservations.
+
+This project designs and implements a web-based Smart Car Rental System that
+allows customers to register, browse vehicles, check availability for date
+ranges, and manage bookings; enables staff to support maintenance and vehicle
+check-in/check-out workflows; and provides administrators with control over
+fleet data, branches, users, staff, bookings, payments visibility, and
+reporting. Comparable web-based rental prototypes have been reported in the
+literature (Thakur, 2021).
+
+The front end uses HTML5, CSS3, JavaScript, and Bootstrap 5 (Bootstrap
+contributors, n.d.; Mozilla, n.d.), with AJAX for real-time availability checks.
+The back end is implemented in PHP 8.2 using object-oriented modules (PHP Group,
+n.d.), with MySQL for persistent storage (Oracle Corporation, n.d.). Security
+measures include bcrypt password hashing (OWASP Foundation, n.d.-b; National
+Institute of Standards and Technology, 2017b), session-based authentication
+(Barth, 2011; National Institute of Standards and Technology, 2017a), CSRF
+protection (OWASP Foundation, n.d.-a), input validation, and prepared SQL
+statements to mitigate injection risks (MITRE, n.d.; OWASP Foundation, 2021).
+
+The result is a deployable prototype suitable for demonstration and extension
+(e.g. live payment gateways and SMS/email). The work concludes with limitations
+and recommendations for production hardening and automated testing
+(Sommerville, 2016).
+
+Keywords: car rental, web application, PHP, MySQL, role-based access, booking
+
+================================================================================
+ACKNOWLEDGMENT
+================================================================================
+
+I thank Almighty God for strength and guidance. I express gratitude to my
+supervisor for advice and feedback, to faculty and staff of my department for
+academic support, and to family and friends for encouragement throughout this
+project.
+
+================================================================================
+DEDICATION
+================================================================================
+
+This work is dedicated to my parents and family for their support during my
+studies.
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+Declaration .......................................................... i
+Certification ........................................................ ii
+Abstract ............................................................ iii
+Acknowledgment ...................................................... iv
+Dedication ........................................................... v
+Table of Contents ................................................... vi
+Table of Figures ................................................... vii
+
+CHAPTER ONE: INTRODUCTION .............................................. 1
+  1.0 Background to the Study .......................................... 1
+  1.1 Statement of the Problem ........................................ 2
+  1.2 Goals ............................................................ 3
+  1.2.1 Specific Objectives .......................................... 3
+  1.3 Significance of Study ............................................ 4
+  1.4 Scope of the Study ............................................... 4
+  1.5 Limitations .................................................... 5
+  1.6 Structure of Dissertation ........................................ 6
+
+CHAPTER TWO: LITERATURE REVIEW ......................................... 7
+
+CHAPTER THREE: METHODOLOGY OF THE STUDY ............................... 14
+
+CHAPTER FOUR: SYSTEM IMPLEMENTATION ................................... 22
+
+CHAPTER FIVE: CONCLUSION AND RECOMMENDATION ........................... 32
+
+References ............................................................ 34
+Appendix .............................................................. 40
+
+================================================================================
+TABLE OF FIGURES
+================================================================================
+
+Figure 4.1  System context (Customer, Staff, Admin, Server, Database)
+Figure 4.2  Use case diagram
+Figure 4.3  Data flow diagram - customer booking
+Figure 4.4  Data flow diagram - admin management
+Figure 4.5  Entity-relationship diagram (core entities)
+Figure 4.6  Login page
+Figure 4.7  Registration page
+Figure 4.8  Vehicle listing / catalog
+Figure 4.9  Booking flow
+Figure 4.10 Admin dashboard
+Figure 4.11 Staff dashboard (sample)
+
+(Insert actual screenshots and page numbers in final document.)
+
+================================================================================
+CHAPTER ONE
+INTRODUCTION
+================================================================================
+
+1.0 Background to the Study
+---------------------------
+
+Urban mobility and short-term vehicle use drive demand for car rental
+services. Customers expect to compare vehicles, see daily rates, and reserve a
+unit for specific dates without repeated phone calls. Operators must maintain
+a single coherent view of which vehicles are available, booked, under
+maintenance, or returned—requirements consistent with sound relational data
+management practice (Connolly & Begg, 2015; Elmasri & Navathe, 2016).
+
+Web-based information systems address these needs by offering self-service
+portals, centralized databases, and role-based access so customers, operational
+staff, and administrators interact with appropriate functions only (Fielding
+et al., 2022). For small and medium enterprises, stacks such as PHP with MySQL
+remain practical because of wide hosting support and rapid delivery of
+form-driven applications (PHP Group, n.d.; Oracle Corporation, n.d.; Pressman &
+Maxim, 2019).
+
+This project implements a Smart Car Rental System: a customer portal for
+discovery and booking, a staff portal for maintenance and handover-related
+tasks, and an admin portal for configuration, user management, and reporting.
+
+1.1 Statement of the Problem
+----------------------------
+
+Traditional rental desks often rely on manual registers, spreadsheets, or ad
+hoc communication. That approach tends to:
+
+  - Increase waiting time and counter congestion.
+  - Raise the risk of human error in recording dates, vehicle IDs, and details.
+  - Make availability hard to verify in real time, increasing double-booking risk.
+  - Provide weak oversight for administrators who need revenue and fleet visibility.
+
+Prior work on web-based car rental systems highlights the value of automating
+manual rental procedures and centralising booking data (Thakur, 2021). The
+problem addressed here is the need for an integrated, web-based rental system
+that enforces structured booking data, separates roles, and applies baseline
+web security practices aligned with widely cited risk guidance (OWASP
+Foundation, 2021; Awan et al., 2016).
+
+1.2 Goals
+---------
+
+The goal is to design and implement a secure, multi-role car rental web
+application backed by a relational database, supporting workflows from browsing
+to booking and administrative control (Sommerville, 2016).
+
+1.2.1 Specific Objectives
+-------------------------
+
+i.   To identify and document functional and non-functional requirements for
+     customers, staff, and administrators (Pressman & Maxim, 2019).
+
+ii.  To design a relational data model for users, vehicles, branches,
+     bookings, and related entities (Silberschatz et al., 2019).
+
+iii. To develop the system using PHP (OOP), MySQL, and a responsive front end
+     with AJAX where appropriate (PHP Group, n.d.; Oracle Corporation, n.d.;
+     Mozilla, n.d.).
+
+iv.  To test core modules manually and document results.
+
+v.   To package the system for local or server demonstration (e.g. XAMPP).
+
+1.3 Significance of Study
+-------------------------
+
+The work demonstrates three-tier web development, SQL integrity, and security
+hygiene for academic purposes (Sommerville, 2016; Connolly & Begg, 2015). For
+small rental businesses it offers a prototype extendable with live payments,
+notifications, and operational policies, in line with patterns seen in online
+service and mobile-commerce research (Garzon et al., 2019; Tan & Ooi, 2018).
+
+1.4 Scope of the Study
+----------------------
+
+In scope:
+  - Customer self-service: registration, login, password recovery, browsing,
+    availability API, booking, profile.
+  - Staff: maintenance, bookings view, checklist / check-in-out as implemented.
+  - Admin: vehicles, categories, brands, branches, users, staff, bookings,
+    payments view, contacts, testimonials moderation, activity logs, reports.
+  - Interface accessibility may be assessed against established web guidelines
+    (World Wide Web Consortium, 2025).
+
+Out of scope:
+  - Full legal/compliance certification, exhaustive load testing, native
+    mobile apps, complete production API configuration without credentials.
+
+1.5 Limitations
+---------------
+
+  - Time and resources constrain advanced third-party integration.
+  - Testing is primarily manual rather than a full automated suite (Pressman &
+    Maxim, 2019).
+  - Internet and device access are assumed; offline-first use is not primary.
+
+1.6 Structure of Dissertation
+------------------------------
+
+Chapter Two reviews literature. Chapter Three describes methodology and tools.
+Chapter Four presents implementation. Chapter Five concludes with
+recommendations. References and appendix follow.
+
+================================================================================
+CHAPTER TWO
+LITERATURE REVIEW
+================================================================================
+
+2.1 Introduction
+----------------
+
+Electronic booking and e-commerce patterns have reshaped how consumers reserve
+services (Garzon et al., 2019). Car rental fits this pattern: catalog
+presentation, reservation, and order or booking tracking (Tan & Ooi, 2018).
+
+2.2 Evolution of Online Booking
+-------------------------------
+
+The web enabled asynchronous self-service and 24/7 access, grounded in standard
+client–server semantics (Fielding et al., 2022). Mobile adoption increased
+expectations for responsive interfaces and quick feedback—for example,
+availability without full page reloads (Tan & Ooi, 2018).
+
+2.3 E-Commerce and Trust
+------------------------
+
+Online rental shares traits with e-commerce: product catalog, pricing, and
+transaction records. Trust depends on clear totals, secure accounts, and
+reliable history (Garzon et al., 2019). Transport-layer security is part of
+modern web deployment practice (Rescorla, 2018).
+
+2.4 Technology Trends
+---------------------
+
+Server-rendered PHP with MySQL remains common for SME systems (PHP Group, n.d.;
+Oracle Corporation, n.d.). AJAX and the Fetch API build on HTTP semantics
+(Fielding et al., 2022) and client-side scripting (Mozilla, n.d.). Bootstrap
+supports responsive layouts (Bootstrap contributors, n.d.), and Chart.js supports
+administrative charts (Chart.js contributors, n.d.). Configuration and API
+payloads often use JSON (Bray, 2017).
+
+2.5 Related Work
+----------------
+
+Prior systems combine mobile apps, kiosks, or web dashboards (Thakur, 2021).
+This project emphasizes a browser-based, role-split rental portal with
+server-side validation and SQL constraints (Connolly & Begg, 2015), suitable as
+an academic prototype with a path to payment and messaging integration. Broader
+verification objectives for web applications are described in industry
+standards (OWASP Foundation, 2023).
+
+================================================================================
+CHAPTER THREE
+METHODOLOGY OF THE STUDY
+================================================================================
+
+3.1 Introduction
+----------------
+
+Development follows a structured, waterfall-inspired sequence: requirements,
+design, implementation, testing, and integration (Sommerville, 2016; Pressman &
+Maxim, 2019).
+
+3.2 Functional Requirements
+-----------------------------
+
+Customer: Register, authenticate, recover password, browse/search vehicles,
+check availability, create and view bookings, manage profile.
+
+Staff: Dashboard; maintenance tasks; bookings; check-in/check-out; checklist.
+
+Admin: Vehicle/category/brand/branch management; users and staff; bookings;
+payments view; contacts; testimonials; activity logs; reports.
+
+3.3 Non-Functional Requirements
+---------------------------------
+
+Security: Authentication, password hashing, CSRF mitigation, and use of
+parameterised queries are consistent with OWASP guidance (OWASP Foundation,
+2021, n.d.-a, n.d.-b) and NIST digital-identity recommendations (National
+Institute of Standards and Technology, 2017a, 2017b). SQL injection remains a
+canonical software weakness class (MITRE, n.d.).
+
+Usability: Responsive UI and clear navigation per portal (Bootstrap
+contributors, n.d.; World Wide Web Consortium, 2025).
+
+Maintainability: Separation of public entry scripts, src classes, config, and
+database scripts (Pressman & Maxim, 2019).
+
+3.4 Tools and Technologies
+--------------------------
+
+Backend: PHP 8.2 (OOP) (PHP Group, n.d.).
+Database: MySQL 8.0 (Oracle Corporation, n.d.; Connolly & Begg, 2015).
+Frontend: HTML5, CSS3, JavaScript, Bootstrap 5, Chart.js (admin analytics)
+(Bootstrap contributors, n.d.; Chart.js contributors, n.d.; Mozilla, n.d.).
+Editor: Visual Studio Code (typical).
+Environment: Apache, PHP, MySQL (e.g. XAMPP).
+
+3.5 Design Artifacts
+--------------------
+
+Data flow diagrams, use case diagrams, and entity-relationship diagrams document
+the system (Elmasri & Navathe, 2016; Silberschatz et al., 2019). (Include figures
+in final submission.)
+
+3.6 Testing Approach
+--------------------
+
+Incremental coding with manual tests for registration, login, booking paths,
+role-restricted URLs, and validation messages (Sommerville, 2016).
+
+3.7 Integration
+---------------
+
+Shared bootstrap, database connection class, authentication layer, and config
+files for app, database, and optional payment/mail/SMS settings. APIs exchange
+structured data using JSON where applicable (Bray, 2017; Fielding et al., 2022).
+
+================================================================================
+CHAPTER FOUR
+SYSTEM IMPLEMENTATION
+================================================================================
+
+4.1 Introduction
+----------------
+
+This chapter describes realization of the Smart Car Rental System: structure,
+data model, interfaces, and testing (Pressman & Maxim, 2019).
+
+4.2 Project Structure
+---------------------
+
+public/          Customer pages; admin/ and staff/ sub-areas
+src/             Core classes (Database, Auth, Booking, Csrf, Helpers, etc.)
+config/          Application and integration settings
+database/        Schema and migrations
+
+4.3 Database
+------------
+
+MySQL stores users, staff, admin, brands, branches, vehicles, bookings, payments-
+related structures, and supporting tables (Oracle Corporation, n.d.). Keys,
+unique constraints, and indexes support integrity and queries (Connolly & Begg,
+2015; Silberschatz et al., 2019).
+
+4.4 Security Implementation
+---------------------------
+
+Passwords are hashed before storage, following password-storage guidance (OWASP
+Foundation, n.d.-b; National Institute of Standards and Technology, 2017b).
+Sessions rely on HTTP state management mechanisms (Barth, 2011). CSRF tokens on
+sensitive forms follow the OWASP CSRF prevention cheat sheet (OWASP Foundation,
+n.d.-a). Prepared statements parameterise queries, reducing SQL-injection risk
+(MITRE, n.d.; OWASP Foundation, 2021). Production deployments should use TLS
+(Rescorla, 2018) and align with HTTP semantics (Fielding et al., 2022).
+
+4.5 Key Features by Role
+-------------------------
+
+Customer: Login, register, catalog with filters, AJAX availability, book,
+my-bookings, profile, password change, contact/FAQs/feedback as implemented.
+
+Admin: Dashboard with charts, vehicle CRUD, categories/brands/branches,
+discounts/insurance, users, staff, bookings, payments, maintenance assignment,
+reports, activity log (Chart.js contributors, n.d.).
+
+Staff: Maintenance, bookings, checklist-related screens.
+
+4.6 Backend Logic
+-----------------
+
+PHP handles authentication, authorization by role, booking operations, admin
+CRUD, and API-style endpoints (e.g. availability) (PHP Group, n.d.).
+
+4.7 Testing
+-----------
+
+Per-page and cross-module manual tests; document sample cases in appendix
+(Sommerville, 2016).
+
+4.8 Deployment
+--------------
+
+Suitable for XAMPP or PHP/MySQL hosting. Production requires HTTPS (Rescorla,
+2018), strong secrets, backups, and updated dependencies. Ongoing security
+verification can reference structured requirements catalogues (OWASP
+Foundation, 2023).
+
+================================================================================
+CHAPTER FIVE
+CONCLUSION AND RECOMMENDATION
+================================================================================
+
+5.1 Conclusion
+--------------
+
+The Smart Car Rental System automates core rental workflows through a multi-
+role web application and MySQL database, with security-oriented choices grounded
+in published guidance (OWASP Foundation, 2021; National Institute of Standards
+and Technology, 2017a, 2017b). The project meets its objectives as a functional
+prototype for demonstration and further enhancement (Sommerville, 2016; Thakur,
+2021).
+
+5.2 Recommendations
+-------------------
+
+1. Enable live payment integration (e.g. Flutterwave/Paystack) with verified
+   callbacks, building on secure HTTP and API practices (Fielding et al., 2022;
+   Rescorla, 2018).
+
+2. Configure SMTP and SMS for confirmations and alerts.
+
+3. Add automated tests (PHPUnit, end-to-end) for booking rules (Pressman &
+   Maxim, 2019).
+
+4. Apply rate limiting, security headers, dependency updates, and periodic
+   review against ASVS-style criteria (OWASP Foundation, 2023; Awan et al.,
+   2016).
+
+5. Conduct user acceptance testing with domain stakeholders.
+
+6. Maintain frequent backups and documented recovery procedures.
+
+================================================================================
+REFERENCES
+================================================================================
+(APA 7th edition, alphabetical. Italics appear as plain text here; use italics
+in Word for book/journal titles. Update “Retrieved” dates when you finish.)
+
+Awan, M. S. K., Burnap, P., & Rana, O. (2016). Identifying cyber risk hotspots: A framework for measuring temporal variance in computer network risk. Computers & Security, 57, 31–46. https://doi.org/10.1016/j.cose.2015.11.003
+
+Barth, A. (2011). HTTP state management mechanism (RFC 6265). RFC Editor. https://doi.org/10.17487/RFC6265
+
+Bootstrap contributors. (n.d.). Bootstrap 5 documentation. Retrieved March 22, 2025, from https://getbootstrap.com/docs/5.3/getting-started/introduction/
+
+Bray, T. (Ed.). (2017). The JavaScript Object Notation (JSON) data interchange format (RFC 8259). RFC Editor. https://doi.org/10.17487/RFC8259
+
+Chart.js contributors. (n.d.). Chart.js documentation. Retrieved March 22, 2025, from https://www.chartjs.org/docs/latest/
+
+Connolly, T. M., & Begg, C. E. (2015). Database systems: A practical approach to design, implementation, and management (6th ed.). Pearson. ISBN 9780132943260.
+
+Elmasri, R., & Navathe, S. B. (2016). Fundamentals of database systems (7th ed.). Pearson. ISBN 9780133970777.
+
+Fielding, R., Nottingham, M., & Reschke, J. (Eds.). (2022). HTTP semantics (RFC 9110). RFC Editor. https://doi.org/10.17487/RFC9110
+
+Garzon, C. A., Brooker, P., Sakarkar, G., & Carranza, S. (2019). Evaluation of collaborative consumption of food delivery services through web mining techniques. Journal of Retailing and Consumer Services, 46, 45–50. https://doi.org/10.1016/j.jretconser.2018.05.002
+
+MITRE. (n.d.). CWE-89: Improper neutralization of special elements used in an SQL command (“SQL injection”). Common Weakness Enumeration. Retrieved March 22, 2025, from https://cwe.mitre.org/data/definitions/89.html
+
+Mozilla. (n.d.). JavaScript reference. MDN Web Docs. Retrieved March 22, 2025, from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference
+
+National Institute of Standards and Technology. (2017a). Digital identity guidelines (NIST Special Publication 800-63-3). U.S. Department of Commerce. https://doi.org/10.6028/NIST.SP.800-63-3
+
+National Institute of Standards and Technology. (2017b). Digital identity guidelines: Authentication and lifecycle management (NIST Special Publication 800-63B). U.S. Department of Commerce. https://doi.org/10.6028/nist.sp.800-63b
+
+Oracle Corporation. (n.d.). MySQL 8.0 reference manual. Retrieved March 22, 2025, from https://dev.mysql.com/doc/refman/8.0/en/
+
+OWASP Foundation. (2021). OWASP top ten: 2021. OWASP. https://owasp.org/Top10/2021/en/
+
+OWASP Foundation. (2023). OWASP application security verification standard (Version 4.0.3). OWASP. https://github.com/OWASP/ASVS/releases/tag/v4.0.3
+
+OWASP Foundation. (n.d.-a). Cross-site request forgery prevention cheat sheet. OWASP Cheat Sheet Series. Retrieved March 22, 2025, from https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+
+OWASP Foundation. (n.d.-b). Password storage cheat sheet. OWASP Cheat Sheet Series. Retrieved March 22, 2025, from https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+
+PHP Group. (n.d.). PHP manual. Retrieved March 22, 2025, from https://www.php.net/manual/en/
+
+Pressman, R. S., & Maxim, B. R. (2019). Software engineering: A practitioner’s approach (9th ed.). McGraw-Hill Education. ISBN 9781259872976.
+
+Rescorla, E. (2018). The transport layer security (TLS) protocol version 1.3 (RFC 8446). RFC Editor. https://doi.org/10.17487/RFC8446
+
+Silberschatz, A., Korth, H. F., & Sudarshan, S. (2019). Database system concepts (7th ed.). McGraw-Hill Education. ISBN 9780078022159.
+
+Sommerville, I. (2016). Software engineering (10th ed.). Pearson. ISBN 9780133943030.
+
+Tan, G. W.-H., & Ooi, K.-B. (2018). Gender and age: Do they really moderate mobile tourism shopping behavior? Telematics and Informatics, 35(6), 1617–1642. https://doi.org/10.1016/j.tele.2018.04.009
+
+Thakur, A. (2021). Car rental system. International Journal for Research in Applied Science and Engineering Technology, 9(VII), 402–412. https://doi.org/10.22214/ijraset.2021.36339
+
+World Wide Web Consortium. (2025). Web content accessibility guidelines (WCAG) 2.1. W3C Recommendation. Retrieved March 22, 2025, from https://www.w3.org/TR/WCAG21/
+
+(Harvard and IEEE variants: docs/REFERENCES.md)
+
+================================================================================
+APPENDIX
+================================================================================
+
+Appendix A - Sample Test Cases
+
+  TC-01  Registration with valid data -> account created
+  TC-02  Login wrong password -> error, no session
+  TC-03  Availability API -> consistent with existing bookings
+  TC-04  Admin URL as customer -> denied or redirect
+
+Appendix B - User Roles (summary)
+
+  Customer: public portal URLs
+  Staff:    staff/ area after staff login
+  Admin:    admin/ area after admin login
+
+Appendix C - Environment
+
+  PHP 8.2, MySQL 8.0, Apache, modern browsers
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+
+Notes for final submission:
+  - Replace [School / Department name], [University name], [Month Year].
+  - Add supervisor and HoD names and signatures on Declaration/Certification.
+  - Insert figure screenshots and correct page numbers in TOC.
+  - Verify student ID with your institution (20220412010).
+  - In Word, format References with hanging indent; italicise titles of books
+    and journals per APA 7.
+  - Ensure every (Author, year) in the body appears in the References list.

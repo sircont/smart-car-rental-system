@@ -1,0 +1,8 @@
+# Online Smart Car Rental — public folder
+# Ensure PHP runs and optional redirect /admin to /admin/
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /Car_Rental_System/public/
+    # Redirect /admin to /admin/index.php
+    RewriteRule ^admin/?$ admin/index.php [L]
+</IfModule>
